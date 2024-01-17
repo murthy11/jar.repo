@@ -1,0 +1,24 @@
+image: (your Docker image here)
+stages:
+  - build
+  - upload
+
+build:
+  stage: build
+  script:
+    - (your commands to build the project)
+    - mvn clean install
+
+  artifacts:
+    paths:
+      - target/(your_file_name).jar
+
+upload:
+  stage: upload
+  before_script:
+    - export VERSION=$(grep -m1 '<version>' pom.xml | grep -oP  '(?<=>).*(?=<)')
+  script:
+    - echo $VERSION
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file target/file_name.jar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/package-name/$VERSION-${CI_COMMIT_SHORT_SHA}/file_name.jar"'
+  dependencies:
+    - build
